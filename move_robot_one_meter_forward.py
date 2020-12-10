@@ -13,7 +13,7 @@ def odometry_callback(msg):
     global x_position
     x_position = msg.pose.pose.position.x
 
-rospy.init_node('move_one_meter')
+rospy.init_node('move_robot_one_meter_forward')
 rospy.Subscriber('/odometry/filtered', Odometry, odometry_callback)
 velocity_publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
 vel_msg = Twist()
@@ -25,6 +25,7 @@ while initial_x_position == 0:
     time.sleep(0.1)
 
 while not rospy.is_shutdown():
+    print('starts loop')
     while abs(x_position - initial_x_position) < 1:
         vel_msg.linear.x = -1 * speed
         print(abs(x_position - initial_x_position))
