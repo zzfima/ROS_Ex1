@@ -14,18 +14,20 @@ class RobotMoving:
         self._velocity_publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
         self._velocity_command = Twist()
         self._current_degree = -9999
+        self._curent_poition = None
         print('init position')
         # polling odometer
         while(self._current_degree == -9999):
             time.sleep(0.1)
         self._rate = rospy.Rate(100)
 
-    def __get_rotation (self, arg):
-        orientation_q = arg.pose.pose.orientation
+    def __get_rotation (self, msg):
+        orientation_q = msg.pose.pose.orientation
         orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
         (roll, pitch, yaw) = euler_from_quaternion (orientation_list) 
         self._current_degree = self.__convert_to_normal_degrees(yaw)
-        print(self._current_degree)
+        self._curent_poition = msg.pose.pose.position
+        print(self._curent_poition)
 
     def __convert_to_normal_degrees(self, rad):
         """
@@ -70,6 +72,12 @@ class RobotMoving:
             self._velocity_publisher.publish(self._velocity_command)
             self._rate.sleep()
 
-    def stright_line_drive(distance):
-        pass
+    def move_forvard(self, distance):
+        initial_position = self._curent_poition
+        while not rospy.is_shutdown():
+            while abs(self._curent_poition.x - initial_position.x) < distance:
+                self._velocity_command.linear.x = -0.2
+                self._velocity_publisher.publish(self._velocity_command)
+                self._rate.sleep()
+            break
 
